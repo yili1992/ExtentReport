@@ -1,4 +1,4 @@
-package com.leoao.test.listerner;
+package com.lee.test.listerner;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -10,7 +10,7 @@ import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import com.aventstack.extentreports.reporter.configuration.ChartLocation;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 
-import com.leoao.test.tool.DateHelper;
+import com.lee.test.tool.DateHelper;
 import org.testng.*;
 import org.testng.xml.XmlSuite;
 
@@ -168,8 +168,8 @@ public class ExtentTestNGIReporterListener implements IReporter {
             reportDir.mkdir();
         }
         ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(OUTPUT_FOLDER + FILE_NAME);
-        htmlReporter.config().setDocumentTitle("leoao_Test_report");
-        htmlReporter.config().setReportName("leoao_Test_report");
+        htmlReporter.config().setDocumentTitle("Test_report");
+        htmlReporter.config().setReportName("Test_report");
         htmlReporter.config().setChartVisibilityOnOpen(true);
         htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
         htmlReporter.config().setTheme(Theme.STANDARD);
