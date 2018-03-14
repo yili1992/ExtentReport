@@ -2,7 +2,7 @@
 基于ExtendReport 实现 Suite->Test->Class->TestMethod 层次关系的报告。
 报告中 包含tearDown setUp等 configurationTest 信息。并且Step的统计不会记录configurationTest。
 
-![image](https://github.com/yili1992/ExtendReport/raw/master/asset/1.jpg)
+![image](https://github.com/yili1992/ExtendReport/raw/master/asset/1.png)
 
 #如何使用
 testng.xml 中增加listener
