@@ -6,7 +6,7 @@
   "keywords": [],
   "dependencies": {
     "bcryptjs": "2.3.0",
-    "ejs": "2.3.4",
+    "ejs": "2.5.5",
     "eslint": "^4.19.1",
     "grunt": "1.0.1",
     "grunt-contrib-clean": "1.0.0",
