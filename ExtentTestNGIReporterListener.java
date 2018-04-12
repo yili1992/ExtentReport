@@ -1,4 +1,4 @@
-package com.leoao.test.listerner;
+package com.lee.test.listener;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -9,24 +9,23 @@ import com.aventstack.extentreports.model.TestAttribute;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import com.aventstack.extentreports.reporter.configuration.ChartLocation;
 import com.aventstack.extentreports.reporter.configuration.Theme;
-
-import com.leoao.test.tool.DateHelper;
+import com.lee.test.common.ConfigModel;
 import org.testng.*;
 import org.testng.xml.XmlSuite;
 
 import java.io.File;
 import java.util.*;
 
-public class ExtentTestNGIReporterListener implements IReporter {
+public class ExtentTestNGIReporterListener implements IReporter{
     //生成的路径以及文件名
     private static final String OUTPUT_FOLDER = "test-output/";
-    private static final String FILE_NAME = DateHelper.getCurrentDate("yyyy-MM-dd HH:mm")+".html";
+    private static final String FILE_NAME = "report.html";
 
     private ExtentReports extent;
 
     @Override
     public void generateReport(List<XmlSuite> xmlSuites, List<ISuite> suites, String outputDirectory) {
-        init();
+        init(suites.get(0));
         boolean createSuiteNode = false;
         if(suites.size()>1){
             createSuiteNode=true;
@@ -59,30 +58,37 @@ public class ExtentTestNGIReporterListener implements IReporter {
                     break;
                 }
             }
-
+            String beforeSuiteName = beforeSuite.getTestMethod().getDescription();
+            if("".equals(beforeSuiteName)||null==beforeSuiteName){
+                beforeSuiteName = beforeSuite.getTestMethod().getMethodName();
+            }
+            String afterSuiteName = afterSuite.getTestMethod().getDescription();
+            if("".equals(afterSuiteName)||null==afterSuiteName){
+                afterSuiteName = afterSuite.getTestMethod().getMethodName();
+            }
             //存在多个suite的情况下，在报告中将同一个一个suite的测试结果归为一类，创建一级节点。
 
             if(createSuiteNode){
                 suiteTest = extent.createTest(suite.getName()).assignCategory(suite.getName());
                 if(null!=beforeSuite) {
-                    beforeSuiteTest = suiteTest.createNode(beforeSuite.getTestMethod().getDescription());
+                    beforeSuiteTest = suiteTest.createNode(beforeSuiteName);
                 }
                 if(null!=afterSuite) {
-                    afterSuiteTest = suiteTest.createNode(afterSuite.getTestMethod().getDescription());
+                    afterSuiteTest = suiteTest.createNode(afterSuiteName);
                 }
             } else {
                 if(null!=beforeSuite) {
-                    beforeSuiteTest = extent.createTest(beforeSuite.getTestMethod().getDescription());
+                    beforeSuiteTest = extent.createTest(beforeSuiteName);
                 }
                 if(null!=afterSuite) {
-                    afterSuiteTest = extent.createTest(afterSuite.getTestMethod().getDescription());
+                    afterSuiteTest = extent.createTest(afterSuiteName);
                 }
             }
             //**** before suite and after suite set START *****
-            if(null!=beforeSuite) {
+            if(null!=beforeSuiteTest) {
                 buildSuiteConfigurationNodes(beforeSuiteTest, beforeSuite);
             }
-            if(null!=afterSuite) {
+            if(null!=afterSuiteTest) {
                 buildSuiteConfigurationNodes(afterSuiteTest, afterSuite);
             }
             //**** before suite and after suite set END *****
@@ -145,6 +151,7 @@ public class ExtentTestNGIReporterListener implements IReporter {
 
         }
         extent.flush();
+
     }
 
     private IResultMap extendResultMap(IResultMap set1, IResultMap set2){
@@ -161,15 +168,15 @@ public class ExtentTestNGIReporterListener implements IReporter {
         return set1;
     }
 
-    private void init() {
+    private void init(ISuite suite) {
         //文件夹不存在的话进行创建
         File reportDir= new File(OUTPUT_FOLDER);
         if(!reportDir.exists()&& !reportDir .isDirectory()){
             reportDir.mkdir();
         }
-        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(OUTPUT_FOLDER + FILE_NAME);
-        htmlReporter.config().setDocumentTitle("leoao_Test_report");
-        htmlReporter.config().setReportName("leoao_Test_report");
+        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(OUTPUT_FOLDER + suite.getName()+ FILE_NAME);
+        htmlReporter.config().setDocumentTitle("lee_Test_report");
+        htmlReporter.config().setReportName("lee's自动化测试报告");
         htmlReporter.config().setChartVisibilityOnOpen(true);
         htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
         htmlReporter.config().setTheme(Theme.STANDARD);
@@ -182,7 +189,16 @@ public class ExtentTestNGIReporterListener implements IReporter {
         //设置静态文件的DNS 如果cdn.rawgit.com访问不了，可以设置为：ResourceCDN.EXTENTREPORTS 或者ResourceCDN.GITHUB
         htmlReporter.config().setResourceCDN(ResourceCDN.EXTENTREPORTS);
         extent = new ExtentReports();
-        extent.attachReporter(htmlReporter);
+        if("".equals(ConfigModel.mongodb_ip)||"".equals(ConfigModel.report_ip)){
+            extent.attachReporter(htmlReporter);
+        }else {
+            MyExtentXReporter extentx = new MyExtentXReporter(ConfigModel.mongodb_ip,27017);
+            extentx.config().setProjectName(suite.getName());
+            extentx.config().setReportName(suite.getXmlSuite().getTests().get(0).getName());
+            String reportServer = "http://"+ConfigModel.report_ip+":"+ConfigModel.report_port;
+            extentx.config().setServerUrl(reportServer);
+            extent.attachReporter(htmlReporter,extentx);
+        }
         extent.setReportUsesManualConfiguration(true);
         // 设置系统信息
         Properties properties = System.getProperties();
@@ -253,7 +269,7 @@ public class ExtentTestNGIReporterListener implements IReporter {
                     classNode = classNodeMap.get(currentClassName);
                 }else {
                     if (extenttest == null) {
-                        classNode = extent.createTest(currentClassName);
+                        classNode = extent.createTest(currentClassName);//创建class 节点
                     } else {
                         //作为子节点进行创建时，设置同父节点的标签一致，便于报告检索。
                         classNode = extenttest.createNode(currentClassName).assignCategory(categories);
@@ -261,12 +277,15 @@ public class ExtentTestNGIReporterListener implements IReporter {
                     classNode.getModel().setStartTime(getTime(result.getStartMillis()));//获取class 下 第一个test开始时间
                     classNodeMap.put(currentClassName,classNode);
                 }
+                classNode.getModel().setEndTime(getTime(result.getEndMillis()));
                 Object[] parameters = result.getParameters();
                 String paramextend="";
                 String name = result.getMethod().getMethodName();
                 //如果有参数，则使用参数的toString在报告的name中显示出来
                 for(Object param:parameters){
-                    paramextend = paramextend+param.toString()+',';
+                    if(null!=param) {
+                        paramextend = paramextend + param.toString() + ',';
+                    }
                 }
                 if(paramextend.length()>0){
                     paramextend = paramextend.substring(0,paramextend.length()-1);
@@ -284,19 +303,16 @@ public class ExtentTestNGIReporterListener implements IReporter {
                 //作为子节点进行创建时，设置同父节点的标签一致，便于报告检索。但是非Test()不设置categories
                 if (result.getMethod().isTest()) {
                     test = classNode.createNode(name).assignCategory(categories);
-                    String package_names[] = result.getTestClass().getName().split("\\.");
-                    String package_name = package_names[0];
-                    for (int i=1; i< package_names.length-1;i++)
-                        package_name = package_name+"."+package_names[i];
-                    test.assignCategory(package_name);
+                    String package_name = result.getTestClass().getName();
+                    //test.assignCategory(package_name);
+                    test.log(Status.DEBUG, package_name);
                     for (String group : result.getMethod().getGroups())
                         test.assignCategory(group);
                 }else {
                     test = classNode.createNode(name);
                 }
-
-                //test.getModel().setDescription(description.toString());
-                //test = extent.createTest(result.getMethod().getMethodName());
+                test.getModel().setStartTime(getTime(result.getStartMillis()));
+                test.getModel().setEndTime(getTime(result.getEndMillis()));
 
                 List<String> outputList = Reporter.getOutput(result);
                 if (result.getMethod().getDescription() != null) {
@@ -308,8 +324,9 @@ public class ExtentTestNGIReporterListener implements IReporter {
                 }
                 if (!result.getMethod().isTest()){
                     if (result.getThrowable() != null) {
-                        test.log(Status.DEBUG, result.getThrowable());
+                        test.log(Status.FAIL, result.getThrowable());
                     }
+                    test.debug(result.getMethod().getMethodName()+":Done");
                 }else {
                     if (result.getThrowable() != null) {
                         test.log(status, result.getThrowable());
@@ -330,9 +347,7 @@ public class ExtentTestNGIReporterListener implements IReporter {
                         log.setTimestamp(getTime(result.getEndMillis()));
                     }
                 }
-                test.getModel().setStartTime(getTime(result.getStartMillis()));
-                test.getModel().setEndTime(getTime(result.getEndMillis()));
-                classNode.getModel().setEndTime(getTime(result.getEndMillis()));
+
             }
         }
     }
