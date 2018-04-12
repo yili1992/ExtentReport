@@ -14,11 +14,14 @@
 - 报告中 包含tearDown setUp等 configurationTest 信息。并且Step的统计不会记录configurationTest。
 - ExtentTestNGIReporterListener.java中ConfigModel 存放了一些固定的配置信息，使用时可以根据自身情况修改
 - 使用TestNG xml执行时候 SuiteName 对应的是ExtentX 中的Project 名字 TestName 对应的是 ExtentX中的Report名字
-=======
+
+
 # 简介
 - 基于ExtendReport 实现 Suite->Test->Class->TestMethod 层次关系的报告。
 - 报告中 包含tearDown setUp等 configurationTest 信息。并且Step的统计不会记录configurationTest。
-- 增加ExtendX 以及修改ExtendX 源码进行适配当前结构(Doing)
+- 增加ExtendX 以及修改ExtendX 源码进行适配当前结构
+
+![image](https://github.com/yili1992/ExtendReport/raw/master/asset/1.png)
 
 ### 如何使用
 
