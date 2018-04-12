@@ -36,7 +36,7 @@ testng.xml 中增加listener
 
 ## ExtentX
 
-Report Server for TestNG Report
+Report Server for TestNG Report 项目目录是 根目录下的 extentx
 ![image](https://github.com/yili1992/ExtendReport/raw/master/asset/dashboard.png)
 
 ### 部署
@@ -44,11 +44,11 @@ Report Server for TestNG Report
 * 下载安装node.js
 * 下载安装mongodb  <3.6 验证过3.2.19
 * 配置mongodb并运行 mongod  --fork   --storageEngine=mmapv1 --dbpath /data/mongodb --logpath /data/mongodb/log/mongodb.log
-* 检出Extent，解压到某一目录
+* 检出extentx，解压到某一目录
 * 进入解压目录中，使用命令 npm install
 * 使用命令 sails lift 启动服务（调试使用）
 * 生产部署  npm -g forever
-* 进入Extent 目录  forever start -l forever.log -o out.log -e err.log app.js
+* 进入extentx 目录  forever start -l forever.log -o out.log -e err.log app.js
 * http://localhost:1337 
 
 
