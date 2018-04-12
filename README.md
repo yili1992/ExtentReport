@@ -17,7 +17,7 @@
 - 我这里定义的 所有的测试用例都需要定义group, 例子： @Test(description = "xxx", priority = 0, groups = {"group1"}),因为 Extentx中报错分类会根据group, 增加group信息对以后分组集成测试也有帮助 ！！
 
 
-# 简介
+### 简介
 - 基于ExtendReport 实现 Suite->Test->Class->TestMethod 层次关系的报告。
 - 报告中 包含tearDown setUp等 configurationTest 信息。并且Step的统计不会记录configurationTest。
 - 增加ExtendX 以及修改ExtendX 源码进行适配当前结构
