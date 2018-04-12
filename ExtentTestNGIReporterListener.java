@@ -174,9 +174,11 @@ public class ExtentTestNGIReporterListener implements IReporter{
         if(!reportDir.exists()&& !reportDir .isDirectory()){
             reportDir.mkdir();
         }
+
         ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(OUTPUT_FOLDER + suite.getName()+ FILE_NAME);
         htmlReporter.config().setDocumentTitle("lee_Test_report");
         htmlReporter.config().setReportName("lee's自动化测试报告");
+
         htmlReporter.config().setChartVisibilityOnOpen(true);
         htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
         htmlReporter.config().setTheme(Theme.STANDARD);
