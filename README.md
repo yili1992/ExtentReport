@@ -14,6 +14,7 @@
 - 报告中 包含tearDown setUp等 configurationTest 信息。并且Step的统计不会记录configurationTest。
 - ExtentTestNGIReporterListener.java中ConfigModel 存放了一些固定的配置信息，使用时可以根据自身情况修改
 - 使用TestNG xml执行时候 SuiteName 对应的是ExtentX 中的Project 名字 TestName 对应的是 ExtentX中的Report名字
+- 我这里定义的 所有的测试用例都需要定义group, 例子： @Test(description = "xxx", priority = 0, groups = {"group1"}),因为 Extentx中报错分类会根据group, 增加group信息对以后分组集成测试也有帮助 ！！
 
 
 # 简介
