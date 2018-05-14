@@ -7,7 +7,6 @@
 - ExtentX performance 图的X坐标问题修改
 - ExtentX 修改数据获取的 sql规则 使其符合Suite->Test->Class->TestMethod 层次结构
 - ExtentX Scenario 定义为 实际执行的测试用例, Test为 所有的@Test 包含 setup,teardown
-- 使用 MyExtentXReporter.java 来代替ExtentXReport.java 修复 report statTime 获取错误问题
 
 ## ExtentReport
 - 基于ExtenReport 实现 Suite->Test->Class->TestMethod 层次关系的报告。
