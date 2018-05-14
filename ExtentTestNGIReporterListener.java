@@ -7,21 +7,29 @@ import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
 import com.aventstack.extentreports.model.TestAttribute;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.reporter.ExtentXReporter;
 import com.aventstack.extentreports.reporter.configuration.ChartLocation;
 import com.aventstack.extentreports.reporter.configuration.Theme;
-import com.lee.test.common.ConfigModel;
 import org.testng.*;
 import org.testng.xml.XmlSuite;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ExtentTestNGIReporterListener implements IReporter{
     //生成的路径以及文件名
     private static final String OUTPUT_FOLDER = "test-output/";
-    private static final String FILE_NAME = "report.html";
-
+    private static final String FILE_NAME = getCurrentDate("yyyy-MM-dd-HH_mm")+".html";
+    private static final String MONGODB_IP = 127.0.0.1;
+    private static final String REPORT_IP = 127.0.0.1;
+    private static final String EXECUTOR_CALLBACK_API = 127.0.0.1:8088/executor/;
     private ExtentReports extent;
+    private ExtentXReporter extentx;
+    private String tacLogId;
+
 
     @Override
     public void generateReport(List<XmlSuite> xmlSuites, List<ISuite> suites, String outputDirectory) {
@@ -151,6 +159,14 @@ public class ExtentTestNGIReporterListener implements IReporter{
 
         }
         extent.flush();
+        if(!"".equals(MONGODB_IP)&&!"".equals(REPORT_IP)){
+            String Log_callBackUrl = EXECUTOR_CALLBACK_API+tacLogId+"&"+extentx.getReportId();
+            try {
+                sendGetRequest(Log_callBackUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
@@ -174,15 +190,15 @@ public class ExtentTestNGIReporterListener implements IReporter{
         if(!reportDir.exists()&& !reportDir .isDirectory()){
             reportDir.mkdir();
         }
-
-        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(OUTPUT_FOLDER + suite.getName()+ FILE_NAME);
-        htmlReporter.config().setDocumentTitle("lee_Test_report");
-        htmlReporter.config().setReportName("lee's自动化测试报告");
-
+        String projectName = suite.getName();
+        String reportName = suite.getXmlSuite().getTests().get(0).getName();
+        tacLogId = suite.getParameter("logId");
+        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(OUTPUT_FOLDER + projectName+"_"+reportName+ FILE_NAME);
+        htmlReporter.config().setDocumentTitle("Test_report");
+        htmlReporter.config().setReportName("自动化测试报告");
         htmlReporter.config().setChartVisibilityOnOpen(true);
         htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
         htmlReporter.config().setTheme(Theme.STANDARD);
-
         //设置点击效果：.node.level-1  ul{ display:none;} .node.level-1.active ul{display:block;}
         //设置系统信息样式：.card-panel.environment  th:first-child{ width:30%;}
         htmlReporter.config().setCSS(".node.level-1  ul{ display:none;} .node.level-1.active ul{display:block;}  .card-panel.environment  th:first-child{ width:30%;}");
@@ -191,13 +207,13 @@ public class ExtentTestNGIReporterListener implements IReporter{
         //设置静态文件的DNS 如果cdn.rawgit.com访问不了，可以设置为：ResourceCDN.EXTENTREPORTS 或者ResourceCDN.GITHUB
         htmlReporter.config().setResourceCDN(ResourceCDN.EXTENTREPORTS);
         extent = new ExtentReports();
-        if("".equals(ConfigModel.mongodb_ip)||"".equals(ConfigModel.report_ip)){
+        if("".equals(MONGODB_IP)||"".equals(REPORT_IP)){
             extent.attachReporter(htmlReporter);
         }else {
-            MyExtentXReporter extentx = new MyExtentXReporter(ConfigModel.mongodb_ip,27017);
-            extentx.config().setProjectName(suite.getName());
-            extentx.config().setReportName(suite.getXmlSuite().getTests().get(0).getName());
-            String reportServer = "http://"+ConfigModel.report_ip+":"+ConfigModel.report_port;
+            extentx = new ExtentXReporter(MONGODB_IP,27017);
+            extentx.config().setProjectName(projectName);
+            extentx.config().setReportName(reportName);
+            String reportServer = "http://"+REPORT_IP+":"+ConfigModel.report_port;
             extentx.config().setServerUrl(reportServer);
             extent.attachReporter(htmlReporter,extentx);
         }
@@ -352,6 +368,25 @@ public class ExtentTestNGIReporterListener implements IReporter{
 
             }
         }
+    }
+
+    public String getCurrentDate(String pattern){
+        Date now = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);//可以方便地修改日期格式
+        return dateFormat.format( now );
+    }
+
+    public String sendGetRequest(String url)
+            throws IOException {
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet(url);
+        HttpResponse httpResponse = client.execute(httpGet);
+        HttpEntity entity = httpResponse.getEntity();
+        String contentStr = EntityUtils.toString(entity, "UTF-8");
+
+        String result = "[{\"status\":\"" + String.valueOf(httpResponse.getStatusLine().getStatusCode()) + "\"},"
+                + contentStr + "]";
+        return result;
     }
 
     private Date getTime(long millis) {
